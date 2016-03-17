@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jsonzai", "Jsonzai\Jsonzai.csproj", "{4B5E625B-CE09-4C47-B63B-DF6E3EF831C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jsonzai.Test", "Jsonzai.Test\Jsonzai.Test.csproj", "{F80FC268-CA65-45B6-B0ED-3C9C9E620617}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4B5E625B-CE09-4C47-B63B-DF6E3EF831C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B5E625B-CE09-4C47-B63B-DF6E3EF831C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B5E625B-CE09-4C47-B63B-DF6E3EF831C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B5E625B-CE09-4C47-B63B-DF6E3EF831C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F80FC268-CA65-45B6-B0ED-3C9C9E620617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F80FC268-CA65-45B6-B0ED-3C9C9E620617}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F80FC268-CA65-45B6-B0ED-3C9C9E620617}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F80FC268-CA65-45B6-B0ED-3C9C9E620617}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
