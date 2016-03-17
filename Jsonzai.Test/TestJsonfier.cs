@@ -14,7 +14,7 @@ namespace Jsonzai.Test
         [TestMethod]
         public void TestJsonfierStudent()
         {
-            var expected = new Student(27721, "Ze Manel");
+            Student expected = new Student(27721, "Ze Manel");
             /*
              * O resultado de ToJson(expected) deve ser igual à string json abaixo
              */
