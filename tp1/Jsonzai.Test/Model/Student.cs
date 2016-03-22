@@ -8,9 +8,15 @@ namespace Jsonzai.Test.Model
 {
     public class Student
     {
+        public int[] test = { 1, 2, 3, 4 };
         public int nr;
         public string name;
+        
 
+        public int [] Test{
+            get { return test; }
+            set { test = value; }
+            }
 
         public Student(int nr, string name)
         {

@@ -7,7 +7,7 @@ using Jsonzai.Reflect;
 using Newtonsoft.Json.Linq;
 
 namespace Jsonzai.Test
-{
+{ 
     [TestClass]
     public class TestJsonfier
     {
@@ -18,8 +18,8 @@ namespace Jsonzai.Test
             /*
              * O resultado de ToJson(expected) deve ser igual à string json abaixo
              */
-            // string json = Jsonfier.ToJson(expected);
-            string json = "{\"nr\":27721,\"name\":\"Ze Manel\"}";
+            string json = Jsonfier.ToJson(expected);
+            //string json = "{\"nr\":27721,\"name\":\"Ze Manel\"}";
             Student actual = JsonConvert.DeserializeObject<Student>(json);
             Assert.AreEqual(expected, actual);
         }
@@ -31,8 +31,8 @@ namespace Jsonzai.Test
             /*
              * O resultado de ToJson(expected) deve ser igual à string json abaixo
              */
-            // string json = Jsonfier.ToJson(expected);
-            string json = "[4,5,6,7]";
+            string json = Jsonfier.ToJson(expected);
+            //string json = "[4,5,6,7]";
             int[] actual = JsonConvert.DeserializeObject<int[]>(json);
             CollectionAssert.AreEqual(expected, actual);
         }
