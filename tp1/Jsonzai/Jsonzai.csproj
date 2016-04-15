@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Instr\Jasoninstr.cs" />
     <Compile Include="Reflect\Jsonfier.cs" />
+    <Compile Include="Reflect\Jsonfier_nok.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

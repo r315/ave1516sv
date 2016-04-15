@@ -1,119 +1,152 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Reflection;
-using System.Collections;
-
-// to get private or protected fields, use FieldInfo
 
 namespace Jsonzai.Reflect
 {
-
     public class Jsonfier
     {
-        private static String ToJsonProperties(object srcObj)
+        private static readonly string quote = "\"";
+        private static readonly string iniBracket = "{";
+        private static readonly string endBracket = "}";
+        private static readonly string iniSquareBracket = "[";
+        private static readonly string endSquareBracket = "]";
+        private static readonly BindingFlags bindFlags = BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance;
+        private static Dictionary<char, Func<MemberInfo, Boolean>> filters = new Dictionary<char, Func<MemberInfo, Boolean>>();
+        private static Func<MemberInfo, Boolean> filterByMethods = (x) => x is MethodInfo && !(((MethodInfo)x).ReturnType.Name.Equals("void")) && ((MethodInfo)x).GetParameters().Length==0;
+        private static Func<MemberInfo, Boolean> filterByFields = (x) => x is FieldInfo;
+        private static Func<MemberInfo, Boolean> filterByProperties = (x) => x is PropertyInfo;
+        private static Func<MemberInfo, Boolean> filter = (x) => filterByFields(x) || filterByProperties(x) || filterByMethods(x);
+
+        public static string ToJson(object src)
         {
-            StringBuilder json = new StringBuilder();
-            Type objType = srcObj.GetType();
-
-            PropertyInfo[] props = objType.GetProperties(
-              BindingFlags.Public |
-              BindingFlags.NonPublic |
-              BindingFlags.Instance);
-
-            //TODO: invoke getMethod???
-            foreach (PropertyInfo prop in props)
+            if (src == null)
             {
-                json.Append("\"" + prop.Name + "\":");
-                json.Append(ToJson(prop.GetValue(srcObj)) + ',');
+                return "null";
             }
-            return json.ToString();
-        }
+            
+            Type t = src.GetType();
 
-        private static String ToJsonFields(object srcObj)
-        {
-            StringBuilder json = new StringBuilder();
-            Type objType = srcObj.GetType();
-            FieldInfo[] fields = objType.GetFields(
-               BindingFlags.Public |
-               BindingFlags.NonPublic |
-               BindingFlags.Instance);
-
-            foreach (FieldInfo field in fields)
+            if (IsBuiltInType(t))
             {
-                json.Append("\"" + field.Name + "\":");
-                json.Append(ToJson(field.GetValue(srcObj)) + ',');
-            }
-            return json.ToString();
-        }
-
-        private static String ToJsonMethods(object srcObj)
-        {
-            StringBuilder json = new StringBuilder();
-            Type objType = srcObj.GetType();
-
-            MethodInfo[] methods = objType.GetMethods(
-               BindingFlags.Public |
-               BindingFlags.NonPublic |
-               BindingFlags.Instance);
-
-            //TODO: filter methods for return type
-            foreach (MethodInfo method in methods)
-            {
-                json.Append("\"" + method.Name + "\":");
-                json.Append(ToJson(method.ReturnType.ToString()) + ',');
-            }
-            return json.ToString();
-        }
-
-        public static string ToJson(object srcObj)
-        {
-            if (srcObj == null) return "null";
-
-            Type objtype = srcObj.GetType();
-
-            if (objtype.IsPrimitive)
-            {
-                if (objtype == typeof(Char))
+                if (t.Name.Equals("Char") || t.Name.Equals("String") || t.Name.Equals("DateTime"))
                 {
-                    return "\"" + srcObj.ToString() + "\"";
+                    return EncloseString(src.ToString(), quote, quote);
+                }
+                else{
+                    return src.ToString().ToLower().Replace(',','.');
+                } 
+            }
+            else if(src is IEnumerable)
+            {
+                StringBuilder sb = new StringBuilder();
+            
+                foreach (object item in (IEnumerable)src)
+                {
+                    sb.Append(Jsonfier.ToJson(item) + ",");
                 }
 
-                if (objtype == typeof(Boolean))
+                sb.Remove(sb.Length - 1, 1);
+
+                return EncloseString(sb.ToString(), iniSquareBracket, endSquareBracket);
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+
+                MemberInfo[] members = t.GetMembers(bindFlags).Where(filter).ToArray();
+
+                foreach (MemberInfo item in members)
                 {
-                    return ((Boolean)srcObj).ToString().ToLower();
+                    sb.Append(EncloseString(item.Name.Replace("get_", ""), quote, quote) + ":");
+
+                    if (item is PropertyInfo)
+                    {
+                        sb.Append(Jsonfier.ToJson(((PropertyInfo)item).GetValue(src)));
+                    }
+                    else if (item is FieldInfo)
+                    {
+                        sb.Append(Jsonfier.ToJson(((FieldInfo)item).GetValue(src)));
+                    }
+                    else if (item is MethodInfo && ((MethodInfo)item).GetParameters().Length == 0)
+                    {
+                        sb.Append(Jsonfier.ToJson(((MethodInfo)item).Invoke(src, new object[0])));
+                    }
+                    sb.Append(",");
                 }
 
-                return srcObj.ToString();
+                sb.Remove(sb.Length - 1, 1);
+
+                return EncloseString(sb.ToString(), iniBracket, endBracket);
             }
+        }
 
-            if (objtype == typeof(String))
-                return "\"" + srcObj.ToString() + "\"";
+        private static bool IsBuiltInType(Type t)
+        {
+            return t.IsPrimitive || t.Name.Equals("String") || t.Name.Equals("DateTime");
+        }
 
-            if (srcObj is IEnumerable)
+        public static string ToJson(object src, string criteriaFlags)
+        {
+            InitFilterDictionary();
+
+            Func<MemberInfo, Boolean> defaultFilter = filter;
+
+            if (criteriaFlags!= null && !criteriaFlags.Equals(""))
             {
-                StringBuilder arr = new StringBuilder("[");
-                foreach (object obj in (IEnumerable)srcObj)
-                    arr.Append(ToJson(obj) + ',');
-                arr.Remove(arr.ToString().LastIndexOf(','), 1);
-                arr.Append("]");
-                return arr.ToString();
+                CreateCustomFilter(criteriaFlags);
             }
 
-            //object is not a built-in type
-            StringBuilder json = new StringBuilder("{");
+            string json = ToJson(src);
 
-            json.Append(ToJsonFields(srcObj));
-            json.Append(ToJsonProperties(srcObj));            
+            filter = defaultFilter;
 
-            json.Remove(json.ToString().LastIndexOf(','), 1);
-            json.Append('}');
+            return json;
+        }
 
-            return json.ToString();
+        private static void CreateCustomFilter(string criteriaFlags)
+        {
+            Func<MemberInfo, Boolean> tempFilter;
+            int processedFlags = 0;
+
+            foreach (char c in criteriaFlags.ToLower())
+            {
+                if (filters.TryGetValue(c, out tempFilter)){
+                    if (processedFlags == 0)
+                    {
+                        filter = tempFilter;
+                    }
+                    else
+                    {
+                        filter = CombineFunc(filter, tempFilter);
+                    }
+                    processedFlags++;
+                }
+            }
+        }
+
+        private static void  InitFilterDictionary ()
+        {
+            if (filters.Count == 0)
+            {
+                filters.Add('m', filterByMethods);
+                filters.Add('p', filterByProperties);
+                filters.Add('f', filterByFields);
+            }
+        }
+
+        private static string EncloseString(String s, String iniClose, String endClose)
+        {
+            return String.Format("{0}{1}{2}", iniClose, s, endClose);
+        }
+
+        private static Func<MemberInfo, Boolean> CombineFunc(Func<MemberInfo, Boolean> f1, Func<MemberInfo, Boolean> f2)
+        {
+           return (x) => f1(x) || f2(x);
         }
     }
-
 }
-

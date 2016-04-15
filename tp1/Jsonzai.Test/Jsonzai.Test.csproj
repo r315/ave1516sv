@@ -58,6 +58,7 @@
     <Compile Include="Model\Student.cs" />
     <Compile Include="TestJsonfier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestJsoninstr.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jsonzai\Jsonzai.csproj">
